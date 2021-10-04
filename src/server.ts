@@ -16,5 +16,5 @@ const sshServer = new ssh.Server(
 );
 
 sshServer.listen({ port: 42222 }, () => {
-  logger.info(`ssh server listening`, sshServer.address());
+  logger.info(`ssh server listening `, sshServer.address());
 });

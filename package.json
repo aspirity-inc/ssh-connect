@@ -5,7 +5,7 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "start": "npx esbuild-nodemon src/server.ts"
+    "start": "npx esbuild-nodemon --inspect src/server.ts"
   },
   "keywords": [],
   "author": "",
