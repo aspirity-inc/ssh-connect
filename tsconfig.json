@@ -26,6 +26,5 @@
 
     /* Additional */
     "strict": true, // Of course!
-    "noImplicitAny": false
   }
 }
