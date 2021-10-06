@@ -23,6 +23,7 @@ export function generateTraefikConfig(domainPrefix: string, port: number) {
         [key]: {
           service: key,
           rule: `Host(\`${domain}\`)`,
+          entryPoints: config.traefikEntryPoints,
         },
       },
     },
@@ -35,6 +36,8 @@ export function generateTraefikConfig(domainPrefix: string, port: number) {
     ),
     yamlConfig
   );
+
+  return domain;
 }
 
 export function removeTraefikConfig(domainPrefix: string, port: number) {

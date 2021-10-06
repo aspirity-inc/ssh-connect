@@ -15,8 +15,8 @@ const sshServer = new ssh.Server(
     logger.info("connected", info);
     handleConnection(client);
     connections.add(client);
-    client.on("close", () => connections.delete(client));
-    client.on("end", () => connections.delete(client));
+    client.once("close", () => connections.delete(client));
+    client.once("end", () => connections.delete(client));
   }
 );
 

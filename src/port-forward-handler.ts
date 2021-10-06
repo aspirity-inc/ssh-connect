@@ -1,6 +1,5 @@
 import { createServer as createTcpServer, Socket, AddressInfo } from "net";
 import { Connection } from "ssh2";
-import { config } from "./config";
 import { generateTraefikConfig, removeTraefikConfig } from "./traefik-config";
 import { getConnectionData } from "./utils/connection-data";
 import { logger } from "./utils/logger";
@@ -66,7 +65,8 @@ export function handlePortForward(connection: Connection) {
           return socketsStorage.get(tcpServer).size;
         },
       });
-      generateTraefikConfig(connectionData.username!, port);
+      const domain = generateTraefikConfig(connectionData.username!, port);
+      connectionData.clientLogger.sendMessage(`You domain is ${domain}`);
     });
 
     tcpServer.on("connection", (socket: Socket) => {

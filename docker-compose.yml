@@ -53,6 +53,7 @@ services:
       - "42222"
     environment:
       SERVER_HOST: ssh-service
+      TRAEFIK_ENTRY_POINTS: p80
     labels:
       traefik.enable: "true"
       traefik.tcp.routers.tcprouter0.rule: HostSNI(`*`)

@@ -7,4 +7,5 @@ export const config = {
   appHost: process.env.PUBLIC_HOST ?? "ssh.localhost",
   port: 42222,
   serverHost: process.env.SERVER_HOST ?? "host.docker.internal",
+  traefikEntryPoints: process.env.TRAEFIK_ENTRY_POINTS?.split(","),
 };
