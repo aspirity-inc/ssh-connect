@@ -1,0 +1,59 @@
+networks:
+  entry:
+    external: true
+
+volumes:
+  app_node_modules: ~
+  generated_configs: ~
+
+services:
+  traefik:
+    image: traefik:v2.5
+    logging:
+      options:
+        max-size: 1m
+    restart: always
+    networks: [entry]
+    ports:
+      - "80:80"
+      - "22:22"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - generated_configs:/configs
+    command:
+      - --api=true
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.network=entry
+      - --providers.file=true
+      - --providers.file.directory=/configs
+      - --providers.file.watch=true
+      - --entryPoints.p80.address=:80
+      - --entryPoints.p22.address=:22
+      - --log.level=DEBUG
+      # - --accessLog
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.traefik.rule: Host(`traefik.localhost`)
+      traefik.http.routers.traefik.entrypoints: p80
+      traefik.http.routers.traefik.service: api@internal
+  ssh-service:
+    image: node:16.10.0-stretch
+    volumes:
+      - app_node_modules:/app/node_modules
+      - generated_configs:/app/traefik-configs
+      - ./:/app
+    networks: [entry]
+    working_dir: /app
+    command: ["sh", "-e", "./in-docker-local-run.sh"]
+    expose:
+      - "42222"
+    environment:
+      SERVER_HOST: ssh-service
+    labels:
+      traefik.enable: "true"
+      traefik.tcp.routers.tcprouter0.rule: HostSNI(`*`)
+      traefik.tcp.routers.tcprouter0.entrypoints: p22

@@ -1,5 +1,7 @@
 import { createServer as createTcpServer, Socket, AddressInfo } from "net";
-import { Connection, TcpipBindInfo } from "ssh2";
+import { Connection } from "ssh2";
+import { config } from "./config";
+import { generateTraefikConfig, removeTraefikConfig } from "./traefik-config";
 import { getConnectionData } from "./utils/connection-data";
 import { logger } from "./utils/logger";
 import { Result } from "./utils/result";
@@ -10,12 +12,6 @@ function forward(
   socket: Socket,
   { address, port }: { address: string; port: number }
 ) {
-  logger.warn("forwardOut", {
-    address,
-    port,
-    remoteAddress: socket.remoteAddress ?? "",
-    remotePort: socket.remotePort ?? 0,
-  });
   connection.forwardOut(
     address,
     port,
@@ -70,17 +66,24 @@ export function handlePortForward(connection: Connection) {
           return socketsStorage.get(tcpServer).size;
         },
       });
+      generateTraefikConfig(connectionData.username!, port);
     });
 
     tcpServer.on("connection", (socket: Socket) => {
       socketsStorage.get(tcpServer).add(socket);
-    });
-    tcpServer.on("close", (socket: Socket) => {
-      socketsStorage.get(tcpServer).delete(socket);
+      socket.once("close", () => {
+        socketsStorage.get(tcpServer).delete(socket);
+      });
     });
 
     tcpServer.once("close", () => {
       logger.info("TCP server closed");
+      if (connectionData.forwardedPort.ok) {
+        removeTraefikConfig(
+          connectionData.username!,
+          connectionData.forwardedPort.value.port
+        );
+      }
       connectionData.forwardedPort = Result.error(
         new Error("TCP server closed")
       );

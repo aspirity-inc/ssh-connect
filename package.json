@@ -11,9 +11,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "ssh2": "1.4.0"
+    "ssh2": "1.4.0",
+    "yaml": "1.10.2"
   },
   "devDependencies": {
-    "@types/ssh2": "^0.5.48"
+    "@types/ssh2": "^0.5.48",
+    "@types/yaml": "^1.9.7"
   }
 }

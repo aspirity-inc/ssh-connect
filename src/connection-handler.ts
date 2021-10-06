@@ -25,6 +25,9 @@ export function handleConnection(connection: Connection) {
     })
     .on("ready", () => {
       logger.info("client ready");
+      connection.once("close", () => "connection close");
+      connection.once("end", () => "connection end");
+      connection.once("error", () => "connection error");
       handlePortForward(connection);
       handleSession(connection);
     });
