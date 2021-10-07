@@ -1,6 +1,6 @@
 .git/
 .vscode/
-deploy/
+docs/
 dist/
 keys/
 node_modules/
