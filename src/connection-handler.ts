@@ -1,4 +1,5 @@
 import { Connection } from "ssh2";
+import { config } from "./config";
 import { handlePortForward } from "./port-forward-handler";
 import { handleSession } from "./session-handler";
 import { getConnectionData } from "./utils/connection-data";
@@ -13,15 +14,27 @@ export function handleConnection(connection: Connection) {
         service: authCtx.service,
         method: authCtx.method,
       });
-      switch (authCtx.method) {
-        case "none":
-          connectionData.username = authCtx.username;
+      connectionData.username = authCtx.username;
+      const passwordRequired = !!config.password;
+
+      if (passwordRequired) {
+        if (authCtx.method !== "password") {
+          authCtx.reject(["password"]);
+          return;
+        }
+        if (authCtx.password === config.password) {
           authCtx.accept();
-          break;
-        default:
-          authCtx.reject();
-          break;
+          return;
+        }
+        authCtx.reject([]);
+        return;
       }
+
+      if (authCtx.method === "none") {
+        authCtx.accept();
+        return;
+      }
+      authCtx.reject();
     })
     .on("ready", () => {
       logger.info("client ready");

@@ -1,9 +1,11 @@
 pwd
 id
-npm list -g --depth=0
 
-npm list -g --depth=0 | grep --silent esbuild-nodemon \
-  || (echo install esbuild-nodemon && npm install --global esbuild-nodemon)
+
+npm list --depth=0
+
+npm list --depth=0 | grep --silent esbuild-nodemon \
+  || (echo install esbuild-nodemon && npm install --no-audit --silent --no-save esbuild-nodemon)
 
 echo npm install
 npm install
