@@ -37,7 +37,17 @@ export function handlePortForward(connection: Connection) {
 
     if (connectionData.forwardedPort.ok) {
       connectionData.clientLogger.sendMessage(
-        "ERROR: only single port forward supported"
+        "⛔️ ERROR: only single port forward supported"
+      );
+      reject?.();
+      return;
+    }
+
+    const bindTo = `${info.bindAddr}:${info.bindPort}`;
+
+    if (bindTo !== ":0") {
+      connectionData.forwardedPort = Result.error(
+        new Error(`Unexpected forward request. got "${bindTo}", expected ":0"`)
       );
       reject?.();
       return;
