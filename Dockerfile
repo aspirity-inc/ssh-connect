@@ -25,4 +25,6 @@ RUN npm run build
 ############   final   ############
 FROM prod_dependencies
 COPY --from=build /app/dist ./
+# Snyc recomends to use dumb-init
+# https://snyk.io/blog/10-best-practices-to-containerize-nodejs-web-applications-with-docker/#:~:text=One%20such%20tool%20that%20we%20use%20at%20Snyk%20is%20dumb-init
 CMD ["dumb-init", "node", "ssh-connect.js"]
