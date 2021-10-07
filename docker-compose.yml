@@ -40,15 +40,31 @@ services:
       traefik.http.routers.traefik.rule: Host(`traefik.localhost`)
       traefik.http.routers.traefik.entrypoints: p80
       traefik.http.routers.traefik.service: api@internal
+  # ssh-service:
+  #   image: node:16.10.0-stretch
+  #   volumes:
+  #     - app_node_modules:/app/node_modules
+  #     - generated_configs:/app/traefik-configs
+  #     - ./:/app
+  #   networks: [entry]
+  #   working_dir: /app
+  #   command: ["sh", "-e", "./in-docker-local-run.sh"]
+  #   expose:
+  #     - "42222"
+  #   environment:
+  #     SERVER_HOST: ssh-service
+  #     TRAEFIK_ENTRY_POINTS: p80
+  #   labels:
+  #     traefik.enable: "true"
+  #     traefik.tcp.routers.tcprouter0.rule: HostSNI(`*`)
+  #     traefik.tcp.routers.tcprouter0.entrypoints: p22
   ssh-service:
-    image: node:16.10.0-stretch
+    image: ssh-connect:local
     volumes:
-      - app_node_modules:/app/node_modules
       - generated_configs:/app/traefik-configs
-      - ./:/app
+      - ./keys:/app/keys
+      - ./passphrases:/app/passphrases
     networks: [entry]
-    working_dir: /app
-    command: ["sh", "-e", "./in-docker-local-run.sh"]
     expose:
       - "42222"
     environment:

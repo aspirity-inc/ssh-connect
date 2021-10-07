@@ -5,7 +5,8 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "start": "npx esbuild-nodemon --inspect src/server.ts"
+    "start": "npx esbuild-nodemon --inspect src/server.ts",
+    "build": "node build.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@types/ssh2": "^0.5.48",
-    "@types/yaml": "^1.9.7"
+    "@types/yaml": "^1.9.7",
+    "esbuild": "0.13.4"
   }
 }

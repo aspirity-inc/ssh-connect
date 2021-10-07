@@ -1,4 +1,4 @@
-type LoggerLevels = "INFO" | "WARN" | "ERRO";
+type LoggerLevels = "INFO" | "WARN" | "ERR_";
 
 class Logger {
   _log(level: LoggerLevels, args: unknown[], logFn = console.log) {
@@ -17,7 +17,7 @@ class Logger {
     this._log("WARN", args);
   }
   error(...args: unknown[]) {
-    this._log("ERRO", args, console.error);
+    this._log("ERR_", args, console.error);
   }
 }
 

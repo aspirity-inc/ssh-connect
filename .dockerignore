@@ -1,0 +1,15 @@
+.git/
+.vscode/
+deploy/
+dist/
+keys/
+node_modules/
+passphrases/
+traefik-configs/
+
+.dockerignore
+.gitignore
+.nvmrc
+Dockerfile
+docker-compose.yml
+in-docker-local-run.sh

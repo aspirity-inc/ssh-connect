@@ -1,0 +1,92 @@
+# NOTE:
+# It is required to configure DNS challenge for this setup
+# This example is provided with digitalocean configuration
+# Info on other providers: https://doc.traefik.io/traefik/v2.5/https/acme/#dnschallenge
+# It is more secure to provide tokens via secrets
+# More detail on files: https://go-acme.github.io/lego/dns/#environment-variables-file
+# Things related to the DNS challenge are marked with <dnschallenge>
+
+secrets:
+  # <dnschallenge> configuring secret file with token
+  # NOTE: other providers may require more then one secret
+  do-api-token:
+    file: /secrets/do-api-token.secret
+
+networks:
+  connect: ~
+
+volumes:
+  generated-configs: ~
+
+services:
+  #######################################################################################
+  traefik-ingres:
+    image: traefik:v2.5
+    logging:
+      options:
+        max-size: 1m
+    networks: [connect]
+    ports:
+      # HTTP
+      - "80:80"
+      # HTTPS
+      - "443:443"
+    restart: always
+    volumes:
+      - generated_configs:/configs
+      - ./certificates:/certificates
+    command:
+      # JSON debug logs
+      - --log.format=json
+      - --log.level=DEBUG
+      # Setup file provider
+      - --providers.file=true
+      - --providers.file.directory=/configs
+      - --providers.file.watch=true
+      # HTTP entrypoint is only for redirect to HTTPS
+      - --entryPoints.web80.address=:80
+      - --entryPoints.web80.http.redirections.entryPoint.permanent=true
+      - --entryPoints.web80.http.redirections.entryPoint.scheme=https
+      - --entryPoints.web80.http.redirections.entryPoint.to=web443
+      # HTTPS entrypoint with predefined certificate
+      - --entryPoints.web443.address=:443
+      - --entryPoints.web443.http.tls=true
+      - --entryPoints.web443.http.tls.certResolver=le-dns
+      - --entrypoints.web443.http.tls.domains[0].main=${PUBLIC_ROOT_HOST}
+      - --entrypoints.web443.http.tls.domains[0].sans=*.${PUBLIC_ROOT_HOST}
+      # Lets encrypt configuration
+      - --certificatesResolvers.le-dns.acme.email=${LETS_ENCRYPT_EMAIL}
+      - --certificatesResolvers.le-dns.acme.storage=/certificates/acme.json
+      # Wildcard certificates can only be verified through a DNS-01 challenge
+      # See more: https://doc.traefik.io/traefik/v2.5/https/acme/#dnschallenge
+      - --certificatesResolvers.le-dns.acme.dnschallenge=true
+      # <dnschallenge> set provider
+      - --certificatesResolvers.le-dns.acme.dnschallenge.provider=digitalocean
+    secrets:
+      # <dnschallenge> use configured secret
+      # NOTE: other providers may require more then one secret
+      - do-api-token
+    environment:
+      # <dnschallenge> provide secret path via environment variable
+      - DO_AUTH_TOKEN_FILE=/run/secrets/do-api-token
+  ssh-tunnel:
+    image: ssh-connect
+    ports:
+      - "${SSH_SERVER_PORT}:42222"
+    environment:
+      SERVER_HOST: ssh-tunnel
+      TRAEFIK_ENTRY_POINTS: web443
+  #######################################################################################
+  ssh-service:
+    image: ssh-connect:local
+    volumes:
+      - generated_configs:/app/traefik-configs
+      - ./keys:/app/keys
+      - ./passphrases:/app/passphrases
+    networks: [connect]
+    ports:
+      - "${SSH_SERVER_PORT}:42222"
+    environment:
+      SERVER_HOST: ssh-service
+      TRAEFIK_ENTRY_POINTS: web443
+  #######################################################################################

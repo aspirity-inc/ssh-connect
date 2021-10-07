@@ -1,6 +1,6 @@
 import { resolve as resolvePath } from "path";
 import { writeFileSync, unlinkSync } from "fs";
-import { stringify } from "yaml";
+import yaml from "yaml";
 import { config } from "./config";
 
 function getConfigFileName(domainPrefix: string, port: number) {
@@ -28,7 +28,7 @@ export function generateTraefikConfig(domainPrefix: string, port: number) {
       },
     },
   };
-  const yamlConfig = stringify(connectionConfig);
+  const yamlConfig = yaml.stringify(connectionConfig);
   writeFileSync(
     resolvePath(
       config.traefikConfigsPath,
