@@ -3,11 +3,17 @@ import { config } from "./config";
 import { handlePortForward } from "./port-forward-handler";
 import { handleSession } from "./session-handler";
 import { getConnectionData } from "./utils/connection-data";
+import { errorToObject } from "./utils/error-to-object";
 import { getConnectionLogger } from "./utils/logger";
 
 export function handleConnection(connection: Connection) {
   const connectionData = getConnectionData(connection);
   connection
+    .on("error", (error) => {
+      getConnectionLogger(connection).error("connection error", {
+        error: errorToObject(error),
+      });
+    })
     .on("authentication", (authCtx) => {
       const connectionLogger = getConnectionLogger(connection);
       connectionLogger.info("client authentication", {
