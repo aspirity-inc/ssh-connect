@@ -1,15 +1,15 @@
 import { Connection } from "ssh2";
 import { ConnectedClientLogger } from "./utils/client-logger";
 import { getConnectionData } from "./utils/connection-data";
-import { logger } from "./utils/logger";
+import { getConnectionLogger } from "./utils/logger";
 
 export function handleSession(connection: Connection) {
   const connectionData = getConnectionData(connection);
   connection.on("session", (accept, reject) => {
-    logger.info("client session");
+    getConnectionLogger(connection).info("client session");
     accept()
       .on("pty", (accept) => accept?.())
-      .on("close", () => logger.info("session closed"))
+      .on("close", () => getConnectionLogger(connection).info("session closed"))
       .on("shell", (accept) => {
         const stream = accept();
 

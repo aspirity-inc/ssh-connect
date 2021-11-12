@@ -1,5 +1,5 @@
 import ssh, { Connection } from "ssh2";
-import { logger } from "./utils/logger";
+import { getConnectionLogger, getRootLogger } from "./utils/logger";
 import { loadKeys } from "./utils/load-keys";
 import { handleConnection } from "./connection-handler";
 import { config } from "./config";
@@ -12,6 +12,7 @@ const sshServer = new ssh.Server(
     ident: "ssh-connect 1.0.0",
   },
   (client, info) => {
+    const logger = getConnectionLogger(client);
     logger.info("connected", info);
     handleConnection(client);
     connections.add(client);
@@ -21,13 +22,13 @@ const sshServer = new ssh.Server(
 );
 
 sshServer.listen({ port: config.port }, () => {
-  logger.info(`ssh server listening`, sshServer.address());
+  getRootLogger().info(`ssh server listening`, sshServer.address());
 });
 
 function graceful(signal: string) {
-  logger.info("Closing ssh server", { signal });
+  getRootLogger().info("Closing ssh server", { signal });
   sshServer.close(() => {
-    logger.info("SSH server closed");
+    getRootLogger().info("SSH server closed");
     process.exit(0);
   });
   [...connections].forEach((connection) => connection.end());

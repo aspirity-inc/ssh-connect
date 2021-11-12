@@ -3,13 +3,14 @@ import { config } from "./config";
 import { handlePortForward } from "./port-forward-handler";
 import { handleSession } from "./session-handler";
 import { getConnectionData } from "./utils/connection-data";
-import { logger } from "./utils/logger";
+import { getConnectionLogger } from "./utils/logger";
 
 export function handleConnection(connection: Connection) {
   const connectionData = getConnectionData(connection);
   connection
     .on("authentication", (authCtx) => {
-      logger.info("client authentication", {
+      const connectionLogger = getConnectionLogger(connection);
+      connectionLogger.info("client authentication", {
         username: authCtx.username,
         service: authCtx.service,
         method: authCtx.method,
@@ -26,6 +27,10 @@ export function handleConnection(connection: Connection) {
           authCtx.accept();
           return;
         }
+        connectionLogger.info("wrong password", {
+          username: authCtx.username,
+          password: authCtx.password,
+        });
         authCtx.reject([]);
         return;
       }
@@ -37,7 +42,7 @@ export function handleConnection(connection: Connection) {
       authCtx.reject();
     })
     .on("ready", () => {
-      logger.info("client ready");
+      getConnectionLogger(connection).info("client ready");
       connection.once("close", () => "connection close");
       connection.once("end", () => "connection end");
       connection.once("error", () => "connection error");

@@ -1,8 +1,8 @@
 export class WeakStorage<TKey extends object, TValue> {
   _map = new WeakMap<TKey, TValue>();
-  _defaultFn: () => TValue;
+  _defaultFn: (key: TKey) => TValue;
 
-  constructor(defaultFn: () => TValue) {
+  constructor(defaultFn: (key: TKey) => TValue) {
     this._defaultFn = defaultFn;
   }
 
@@ -10,7 +10,7 @@ export class WeakStorage<TKey extends object, TValue> {
     if (this._map.has(key)) {
       return this._map.get(key)!;
     }
-    const obj = this._defaultFn();
+    const obj = this._defaultFn(key);
     this._map.set(key, obj);
     return obj;
   }

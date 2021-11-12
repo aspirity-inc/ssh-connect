@@ -2,7 +2,7 @@ import { createServer as createTcpServer, Socket, AddressInfo } from "net";
 import { Connection } from "ssh2";
 import { generateTraefikConfig, removeTraefikConfig } from "./traefik-config";
 import { getConnectionData } from "./utils/connection-data";
-import { logger } from "./utils/logger";
+import { getConnectionLogger } from "./utils/logger";
 import { Result } from "./utils/result";
 import { socketsStorage } from "./utils/sockets-storage";
 
@@ -18,7 +18,11 @@ function forward(
     socket.remotePort ?? 0,
     (err, stream) => {
       if (err) {
-        logger.error("Cannot forward", { address, port }, err);
+        getConnectionLogger(connection).error(
+          "Cannot forward",
+          { address, port },
+          err
+        );
         socket.end();
         return;
       }
@@ -53,7 +57,7 @@ export function handlePortForward(connection: Connection) {
       return;
     }
 
-    logger.info("client request", name, info);
+    getConnectionLogger(connection).info("client request", name, info);
 
     const tcpServer = createTcpServer((socket) => {
       const { port } = tcpServer.address() as AddressInfo;
@@ -61,7 +65,10 @@ export function handlePortForward(connection: Connection) {
     });
 
     tcpServer.listen({ port: info.bindPort, host: info.bindAddr }, () => {
-      logger.info("TCP server listening", tcpServer.address());
+      getConnectionLogger(connection).info(
+        "TCP server listening",
+        tcpServer.address()
+      );
       const { port } = tcpServer.address() as AddressInfo;
       accept?.(port);
       connectionData.forwardedPort = Result.ok({
@@ -87,7 +94,7 @@ export function handlePortForward(connection: Connection) {
     });
 
     tcpServer.once("close", () => {
-      logger.info("TCP server closed");
+      getConnectionLogger(connection).info("TCP server closed");
       if (connectionData.forwardedPort.ok) {
         removeTraefikConfig(
           connectionData.username!,
